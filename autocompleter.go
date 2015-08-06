@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"encoding/json"
 )
 
 type appHandler func(http.ResponseWriter, *http.Request) (int, error)
@@ -12,9 +13,8 @@ type appHandler func(http.ResponseWriter, *http.Request) (int, error)
 // Our appHandler type will now satisify http.Handler
 func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	status, err := fn(w, r)
-	log.Printf("Request %v", r)
+	// log.Printf("Request %v", r)
 	if err != nil {
-		// We could also log our errors centrally:
 		log.Printf("HTTP %d: %v", err)
 		switch status {
 		// We can have cases as granular as we like, if we wanted to
@@ -30,9 +30,20 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func myHandler(w http.ResponseWriter, r *http.Request) (int, error) {
+type autoSuggestionResponse struct {
+	Q string `json:"q"`
+	Suggestions []string `json:"suggestions"`
+}
+
+func suggestionsHandler(w http.ResponseWriter, r *http.Request) (int, error) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.Write([]byte("Hello mundo!"))
+	partialWord := r.FormValue("q")
+	suggestions := autoSuggestionResponse{ Q: partialWord }
+	// TODO look up in trie
+	suggestions.Suggestions = []string{"car", "cat", "catch", "calculate"}
+	if err := json.NewEncoder(w).Encode(suggestions); err != nil {
+		panic(err)
+	}
 	return 200, nil
 }
 
@@ -45,7 +56,7 @@ func main() {
 	}
 	s := &http.Server{
 		Addr:         ":" + port,
-		Handler:      appHandler(myHandler),
+		Handler:      appHandler(suggestionsHandler),
 		ReadTimeout:  2 * time.Second,
 		WriteTimeout: 2 * time.Second,
 	}
