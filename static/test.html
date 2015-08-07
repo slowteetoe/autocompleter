@@ -5,17 +5,26 @@
 $(document).ready(function(){
 	$('#word').on("input", function() {
     	var q = this.value;
-
-	    $.getJSON("/", {"q": q}, function(data) { $('#results').text(data.suggestions) });
+    	if(q.length > 1){	// avoid bringing back 30,000 words
+		    $.getJSON("/", {"q": q}, function(data) {
+		    	var ul = $('<ul/>');
+				$.each(data.suggestions, function(i){
+				    var li = $('<li/>').text(data.suggestions[i]).appendTo(ul);
+				});
+				$('#results').empty();
+				$('#results').replaceWith(ul);
+				ul.attr('id', 'results');
+		    });
+		}
 	});
 });
 </script>
 </head>
 <body>
 	<form method="post" action="#">
-		<span>Start typing here for suggestions: <input name="word" id="word"/></span>
+		<span>Start typing here for suggestions (<i>will start appearing after 2 chars</i>): <input name="word" id="word"/></span>
 		<br />
-		<div id="results"/>
+		<ul id="results"/>
 	</form>
 </body>
 </html>
