@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path"
 	"slowteetoe.com/autocompleter/wordstore"
 	"time"
 )
@@ -68,9 +69,15 @@ func main() {
 	}
 	s := &http.Server{
 		Addr:         ":" + port,
-		Handler:      appHandler(suggestionsHandler),
 		ReadTimeout:  2 * time.Second,
 		WriteTimeout: 2 * time.Second,
 	}
+	http.HandleFunc("/favicon.ico", ServeFileHandler)
+	http.Handle("/", appHandler(suggestionsHandler))
 	log.Fatal(s.ListenAndServe())
+}
+
+func ServeFileHandler(res http.ResponseWriter, req *http.Request) {
+	fname := path.Base(req.URL.Path)
+	http.ServeFile(res, req, "./static/"+fname)
 }
