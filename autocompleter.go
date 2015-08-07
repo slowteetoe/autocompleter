@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"slowteetoe.com/autoCompleter/wordstore"
+	"slowteetoe.com/autocompleter/Godeps/_workspace/src/slowteetoe.com/autoCompleter/wordstore"
 	"time"
 )
 
