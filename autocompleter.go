@@ -5,15 +5,18 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"slowteetoe.com/autocompleter/Godeps/_workspace/src/github.com/derekparker/trie"
+	"slowteetoe.com/autoCompleter/wordstore"
 	"time"
 )
 
-var t *trie.Trie
+type AutoCompleter interface {
+	PrefixSearch(searchTerm string) []string
+}
+
+var autoCompleter AutoCompleter
 
 func init() {
-	t = trie.New()
-	t.Add("cow", nil)
+	autoCompleter = new(wordstore.Wordstore)
 }
 
 type appHandler func(http.ResponseWriter, *http.Request) (int, error)
@@ -44,19 +47,13 @@ type autoSuggestionResponse struct {
 }
 
 func suggestionsHandler(w http.ResponseWriter, r *http.Request) (int, error) {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	partialWord := r.FormValue("q")
-	suggestions := autoSuggestionResponse{Q: partialWord}
-	// TODO look up in trie
 
-	suggestions.Suggestions = []string{"car", "cat", "catch", "calculate"}
-	trieSuggestions := t.PrefixSearch(partialWord)
-	if trieSuggestions != nil {
-		for _, s := range trieSuggestions {
-			suggestions.Suggestions = append(suggestions.Suggestions, s)
-		}
-	}
-	if err := json.NewEncoder(w).Encode(suggestions); err != nil {
+	q := r.FormValue("q")
+
+	response := autoSuggestionResponse{Q: q, Suggestions: autoCompleter.PrefixSearch(q)}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
 		panic(err)
 	}
 	return 200, nil
