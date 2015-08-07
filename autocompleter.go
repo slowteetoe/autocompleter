@@ -24,6 +24,10 @@ type appHandler func(http.ResponseWriter, *http.Request) (int, error)
 
 // Our appHandler type will now satisify http.Handler
 func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// add CORS header
+	if origin := r.Header.Get("Origin"); origin != "" {
+            w.Header().Set("Access-Control-Allow-Origin", origin)
+    }
 	status, err := fn(w, r)
 	// log.Printf("Request %v", r)
 	if err != nil {
@@ -73,6 +77,7 @@ func main() {
 		WriteTimeout: 2 * time.Second,
 	}
 	http.HandleFunc("/favicon.ico", ServeFileHandler)
+	http.HandleFunc("/test.html", ServeFileHandler)
 	http.Handle("/", appHandler(suggestionsHandler))
 	log.Fatal(s.ListenAndServe())
 }

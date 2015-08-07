@@ -1,0 +1,21 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script>
+$(document).ready(function(){
+	$('#word').on("input", function() {
+    	var q = this.value;
+
+	    $.getJSON("/", {"q": q}, function(data) { $('#results').text(data.suggestions) });
+	});
+});
+</script>
+</head>
+<body>
+	<form method="post" action="#">
+		<span>Start typing here for suggestions: <input name="word" id="word"/></span>
+		<br />
+		<div id="results"/>
+	</form>
+</body>
+</html>
