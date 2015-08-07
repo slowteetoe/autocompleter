@@ -40,7 +40,7 @@ func PopulateDictionary(t *trie.Trie) {
 		panic(err)
 	}
 	log.Println(pwd)
-	wordsfile, err := filepath.Abs("./data/words")
+	wordsfile, err := filepath.Abs("./data/eows")
 	if err != nil {
 		panic(err)
 	}
