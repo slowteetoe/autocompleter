@@ -1,12 +1,20 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
+	"slowteetoe.com/autocompleter/Godeps/_workspace/src/github.com/derekparker/trie"
 	"time"
-	"encoding/json"
 )
+
+var t *trie.Trie
+
+func init() {
+	t = trie.New()
+	t.Add("cow", nil)
+}
 
 type appHandler func(http.ResponseWriter, *http.Request) (int, error)
 
@@ -31,16 +39,23 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type autoSuggestionResponse struct {
-	Q string `json:"q"`
+	Q           string   `json:"q"`
 	Suggestions []string `json:"suggestions"`
 }
 
 func suggestionsHandler(w http.ResponseWriter, r *http.Request) (int, error) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	partialWord := r.FormValue("q")
-	suggestions := autoSuggestionResponse{ Q: partialWord }
+	suggestions := autoSuggestionResponse{Q: partialWord}
 	// TODO look up in trie
+
 	suggestions.Suggestions = []string{"car", "cat", "catch", "calculate"}
+	trieSuggestions := t.PrefixSearch(partialWord)
+	if trieSuggestions != nil {
+		for _, s := range trieSuggestions {
+			suggestions.Suggestions = append(suggestions.Suggestions, s)
+		}
+	}
 	if err := json.NewEncoder(w).Encode(suggestions); err != nil {
 		panic(err)
 	}

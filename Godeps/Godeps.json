@@ -4,5 +4,10 @@
 	"Packages": [
 		"./..."
 	],
-	"Deps": []
+	"Deps": [
+		{
+			"ImportPath": "github.com/derekparker/trie",
+			"Rev": "11c518a1bcb08e242582d1a9534c5c5d917fae6c"
+		}
+	]
 }
